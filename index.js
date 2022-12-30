@@ -1,7 +1,7 @@
 const express = require("express");
 const app = express();
 const cors = require("cors");
-const { MongoClient } = require("mongodb");
+const { MongoClient, ObjectId } = require("mongodb");
 const port = process.env.PORT || 5000;
 
 // Middleware
@@ -42,6 +42,27 @@ app.get("/my-task", async (req, res) => {
 
 app.get("/", (req, res) => {
   res.send("Task App Server is Runnig");
+});
+
+// Get user specific tasks
+app.get("/my-tasks", async (req, res) => {
+  let query = {};
+  if (req.query.user_email) {
+    query = {
+      user_email: req.query.user_email,
+    };
+  }
+  const cursor = taskCollection.find(query);
+  const result = await cursor.toArray();
+  res.send(result);
+});
+
+// Delete Task using ID
+app.delete("/task/:id", async (req, res) => {
+  const id = req.params.id;
+  let query = { _id: ObjectId(id) };
+  const result = await taskCollection.deleteOne(query);
+  res.send(result);
 });
 
 // Listen API for Port
